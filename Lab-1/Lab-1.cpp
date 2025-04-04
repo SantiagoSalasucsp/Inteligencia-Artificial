@@ -180,16 +180,20 @@ public:
     vector<Node<T>> nodes;
     
     double distanciaHeuristica(int nodo1, int nodo2) {
-        int filas = 20;
-        int columnas = 40;
         
-        int fila1 = nodo1 / columnas;
-        int col1 = nodo1 % columnas;
+        const int columnas = 40;
         
-        int fila2 = nodo2 / columnas;
-        int col2 = nodo2 % columnas;
+        int x1 = nodo1 % columnas;
+        int y1 = nodo1 / columnas;
+        int x2 = nodo2 % columnas;
+        int y2 = nodo2 / columnas;
         
-        return sqrt(pow(fila2 - fila1, 2) + pow(col2 - col1, 2)) * 10;
+        
+        int distancia = (abs(x1 - x2) + abs(y1 - y2)) * 10;
+        
+        
+        
+        return distancia;
     }
     
     Camino amplitud(int inicio, int fin) {
@@ -441,37 +445,23 @@ public:
 
     Camino aestrella(int inicio, int fin) {
         Camino resultado;
-        vector<int> cola;
+        vector<int> listaAbierta;
         set<int> visitados;
         vector<int> padres(nodes.size(), -1);
-        vector<double> costos(nodes.size(), 20);
         
-        cola.push_back(inicio);
+        listaAbierta.push_back(inicio);
         visitados.insert(inicio);
         resultado.nodosVisitados.push_back(inicio);
-        costos[inicio] = 0;
         
         int maxMemoria = 1;
         int pasos = 0;
         bool encontrado = false;
         
-        while (!cola.empty() && !encontrado) {
-            if (cola.size() > maxMemoria)
-                maxMemoria = cola.size();
+        while (!listaAbierta.empty() && !encontrado) {
+            if (listaAbierta.size() > maxMemoria) maxMemoria = listaAbierta.size();
             
-            int mejorIdx = 0;
-            double mejorValor = costos[cola[0]] + distanciaHeuristica(cola[0], fin);
-            
-            for (size_t i = 1; i < cola.size(); ++i) {
-                double valorActual = costos[cola[i]] + distanciaHeuristica(cola[i], fin);
-                if (valorActual < mejorValor) {
-                    mejorValor = valorActual;
-                    mejorIdx = i;
-                }
-            }
-            
-            int actual = cola[mejorIdx];
-            cola.erase(cola.begin() + mejorIdx);
+            int actual = listaAbierta.front();
+            listaAbierta.erase(listaAbierta.begin());
             pasos++;
             
             if (actual == fin) {
@@ -479,25 +469,26 @@ public:
                 break;
             }
             
-            for (size_t i = 0; i < nodes[actual].edges.size(); ++i) {
+            vector<pair<int, double>> vecinos;
+            for (unsigned int i = 0; i < nodes[actual].edges.size(); i++) {
                 int vecino = nodes[actual].edges[i].id_node;
-                double nuevoCosto = costos[actual] + nodes[actual].edges[i].value;
-                
-                if (visitados.find(vecino) == visitados.end() || nuevoCosto < costos[vecino]) {
-                    double costoTotal = nuevoCosto;
-                    sumarValores(costoTotal, distanciaHeuristica(vecino, fin));
+                if (visitados.find(vecino) == visitados.end()) {
+                    // costo
+                    double costo = nodes[actual].edges[i].value;
                     
-                    visitados.insert(vecino);
-                    resultado.nodosVisitados.push_back(vecino);
-                    padres[vecino] = actual;
-                    costos[vecino] = nuevoCosto;
-                    cola.push_back(vecino);
-                    
-                    if (vecino == fin) {
-                        encontrado = true;
-                        break;
-                    }
+                    double h = distanciaHeuristica(vecino, fin) + costo;
+                    vecinos.push_back(make_pair(vecino, h));
                 }
+            }
+            
+            sort(vecinos.begin(), vecinos.end(), compararMayor);
+            
+            for (unsigned int i = 0; i < vecinos.size(); i++) {
+                int vecino = vecinos[i].first;
+                visitados.insert(vecino);
+                resultado.nodosVisitados.push_back(vecino);
+                padres[vecino] = actual;
+                listaAbierta.insert(listaAbierta.begin(), vecino);
             }
         }
         
@@ -565,8 +556,8 @@ void manejarClic(int boton, int estado, int x, int y) {
                 //Camino resultado = g.amplitud(primerNodoSeleccionado, segundoNodoSeleccionado);
                 //Camino resultado = g.profundidad(primerNodoSeleccionado, segundoNodoSeleccionado);
                 //Camino resultado = g.hillClimbing(primerNodoSeleccionado, segundoNodoSeleccionado);
-                //Camino resultado = g.hillClimbingCorto(primerNodoSeleccionado, segundoNodoSeleccionado);
-                Camino resultado = g.aestrella(primerNodoSeleccionado, segundoNodoSeleccionado);
+                Camino resultado = g.hillClimbingCorto(primerNodoSeleccionado, segundoNodoSeleccionado);
+                //Camino resultado = g.aestrella(primerNodoSeleccionado, segundoNodoSeleccionado);
 
                 cout << "Pasos: " << resultado.numerosPasos << ", Memoria maxima: " << resultado.memoriaMaxUsada << endl;
 
@@ -679,6 +670,10 @@ int main(int argc, char** argv) {
     glutMainLoop();
     return 0;
 }
+
+
+
+
 
 
 
