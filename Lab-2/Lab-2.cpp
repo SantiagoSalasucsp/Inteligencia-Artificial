@@ -1,4 +1,6 @@
-﻿////Windows 
+﻿#include "WindowGame.h"
+
+//WINDOWS
 #include <windows.h>
 #include <GL/gl.h>
 #include <GL/glu.h>
@@ -8,16 +10,6 @@
 //#include <OpenGL/gl.h>
 //#include <OpenGL/glu.h>
 //#include <GLUT/glut.h>
-
-#include <iostream>
-#include <vector>
-#include <cstdlib>
-#include <queue>
-#include <set>
-#include <algorithm>
-#include <cmath>
-
-#include "WindowGame.h"
 
 int main(int argc, char** argv) {
     const int boardSize = 3, winW = 600, winH = 600;

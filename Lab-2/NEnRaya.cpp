@@ -1,12 +1,13 @@
 #include "NEnRaya.h"
+#include <cmath>
+#include <algorithm>
 
+//WINDOWS
 #include <windows.h>
 #include <GL/gl.h>
 #include <GL/glu.h>
 #include <GL/glut.h>
 
-#include <cmath>
-#include <algorithm>
 
 NEnRaya::NEnRaya(int boardSize) : size(boardSize), board(size, std::vector<char>(size, ' ')), current('X') {}
 
@@ -37,7 +38,7 @@ void NEnRaya::draw() const {
             float x = c * step, y = r * step;
             switch (board[r][c]) {
             case 'X':
-                glColor3f(1, 0, 0);
+                glColor3f(1, 1, 1);
                 glBegin(GL_LINES);
                 glVertex2f(x + pad, y + pad);
                 glVertex2f(x + step - pad, y + step - pad);
@@ -46,7 +47,7 @@ void NEnRaya::draw() const {
                 glEnd();
                 break;
             case 'O':
-                glColor3f(0, 0, 1);
+                glColor3f(1, 1, 1);
                 glBegin(GL_LINE_LOOP);
                 for (int i = 0; i < 100; ++i) {
                     float angle = 2 * 3.14159f * i / 100;

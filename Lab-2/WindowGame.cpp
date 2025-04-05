@@ -1,4 +1,6 @@
 #include "WindowGame.h"
+
+//WINDOWS
 #include <windows.h>
 #include <GL/glut.h>
 
