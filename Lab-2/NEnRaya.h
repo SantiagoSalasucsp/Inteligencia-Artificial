@@ -9,7 +9,11 @@ public:
     char current;
 
     NEnRaya(int boardSize = 3);
-
+    const std::vector<std::vector<char>>& getBoard() const;
+    void setBoard(const std::vector<std::vector<char>>& b);
+    void reset();
+    void click(int x, int y, int w, int h);
     void draw() const;
-    void click(int x, int y, int width, int height);
+    int getCell(int row, int col) const;
+    int getSize() const;
 };

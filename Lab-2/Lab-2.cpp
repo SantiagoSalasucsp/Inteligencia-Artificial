@@ -12,14 +12,16 @@
 //#include <GLUT/glut.h>
 
 int main(int argc, char** argv) {
-    const int boardSize = 3, winW = 600, winH = 600;
+    const int boardSize = 3, width = 600, height = 600, depth = 1;
+    bool iaFirst = true;
+
     NEnRaya game(boardSize);
-    WindowGame window(game, winW, winH);
+    WindowGame window(game, width, height, iaFirst, depth);
 
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB);
-    glutInitWindowSize(winW, winH);
-    glutCreateWindow("N en Raya");
+    glutInitWindowSize(width, height);
+    glutCreateWindow("IA vs Jugador - N en Raya");
 
     window.init();
     glutDisplayFunc(WindowGame::display);

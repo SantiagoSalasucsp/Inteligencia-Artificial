@@ -8,8 +8,30 @@
 #include <GL/glu.h>
 #include <GL/glut.h>
 
+NEnRaya::NEnRaya(int boardSize) : size(boardSize), board(size, std::vector<char>(size, ' ')), current('O') {}
 
-NEnRaya::NEnRaya(int boardSize) : size(boardSize), board(size, std::vector<char>(size, ' ')), current('X') {}
+const std::vector<std::vector<char>>& NEnRaya::getBoard() const {
+    return board;
+}
+
+void NEnRaya::setBoard(const std::vector<std::vector<char>>& b) {
+    board = b;
+    current = 'O';
+}
+
+void NEnRaya::reset() {
+    for (auto& row : board)
+        std::fill(row.begin(), row.end(), ' ');
+    current = 'O';
+}
+
+int NEnRaya::getCell(int row, int col) const {
+    return board[row][col];
+}
+
+int NEnRaya::getSize() const {
+    return size;
+}
 
 void NEnRaya::click(int x, int y, int width, int height) {
     int cellW = width / size, cellH = height / size;
@@ -38,7 +60,7 @@ void NEnRaya::draw() const {
             float x = c * step, y = r * step;
             switch (board[r][c]) {
             case 'X':
-                glColor3f(1, 1, 1);
+                glColor3f(1, 0, 0);
                 glBegin(GL_LINES);
                 glVertex2f(x + pad, y + pad);
                 glVertex2f(x + step - pad, y + step - pad);
@@ -47,7 +69,7 @@ void NEnRaya::draw() const {
                 glEnd();
                 break;
             case 'O':
-                glColor3f(1, 1, 1);
+                glColor3f(0, 0, 1);
                 glBegin(GL_LINE_LOOP);
                 for (int i = 0; i < 100; ++i) {
                     float angle = 2 * 3.14159f * i / 100;
@@ -58,6 +80,5 @@ void NEnRaya::draw() const {
                 break;
             }
         }
-
     glutSwapBuffers();
 }
