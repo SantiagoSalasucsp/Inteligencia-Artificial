@@ -19,7 +19,9 @@ void NEnRaya::setBoard(const std::vector<std::vector<char>>& b) {
     current = 'O';
 }
 
-void NEnRaya::reset() {
+void NEnRaya::reset(int s) {
+    size = s;
+    board = std::vector<std::vector<char>>(size, std::vector<char>(size, ' '));
     for (auto& row : board)
         std::fill(row.begin(), row.end(), ' ');
     current = 'O';
@@ -33,15 +35,17 @@ int NEnRaya::getSize() const {
     return size;
 }
 
+//modificar la matriz del tablero
 void NEnRaya::click(int x, int y, int width, int height) {
     int cellW = width / size, cellH = height / size;
-    int col = x / cellW, row = (height - y) / cellH;
+    int col = x / cellW, row = y / cellH;
     if (row >= 0 && row < size && col >= 0 && col < size && board[row][col] == ' ') {
         board[row][col] = current;
         current = (current == 'X') ? 'O' : 'X';
     }
 }
 
+//dibujar la matriz del tablero
 void NEnRaya::draw() const {
     const float step = 1.0f / size, pad = step * 0.2f, radius = step * 0.3f;
     glClear(GL_COLOR_BUFFER_BIT);
@@ -57,7 +61,7 @@ void NEnRaya::draw() const {
 
     for (int r = 0; r < size; ++r)
         for (int c = 0; c < size; ++c) {
-            float x = c * step, y = r * step;
+            float x = c * step, y = (size - 1 - r) * step;
             switch (board[r][c]) {
             case 'X':
                 glColor3f(1, 0, 0);
