@@ -1,6 +1,7 @@
 #include "GameTreeNode.h"
 #include <algorithm>
 #include <cmath>
+#include <iostream>
 
 GameTreeNode::GameTreeNode(const std::vector<std::vector<char>>& b, char player, int d)
     : board(b), currentPlayer(player), depth(d), aiWinPaths(0), playerWinPaths(0) {
@@ -60,10 +61,32 @@ GameTreeNode* GameTreeNode::bestMove(bool maximizing) {
     int bestVal = maximizing ? -9999 : 9999;
     GameTreeNode* best = nullptr;
     for (auto* child : children) {
+        //imprimir info tabla
+        for (int i = 0; i < child->depth; i++) std::cout << " ";
+        std::cout << "D " << child->depth << ": " << child->aiWinPaths << " - " << child->playerWinPaths << " = " << child->utility() << " " << &*child  << "\n";
+        //imprimir tabla
+        for (int r = 0; r < child->board.size(); r++) {
+            for (int c = 0; c < child->board.size(); c++)
+                std::cout << (child->board[r][c]);
+            std::cout << "\n";
+        }
+        //buscar minmax
         int val = child->bestMove(!maximizing)->utility();
         if ((maximizing && val > bestVal) || (!maximizing && val < bestVal)) {
             bestVal = val;
             best = child;
+            //imprimir best
+            std::cout << "======\nBEST: " << &*child <<" "  << maximizing << "\n";
+            //imprimir info tabla
+            for (int i = 0; i < child->depth; i++) std::cout << " ";
+            std::cout << "D " << child->depth << ": " << child->aiWinPaths << " - " << child->playerWinPaths << " = " << child->utility() << " " << &*child << "\n";
+            //imprimir tabla
+            for (int r = 0; r < child->board.size(); r++) {
+                for (int c = 0; c < child->board.size(); c++)
+                    std::cout << (child->board[r][c]);
+                std::cout << "\n";
+            }
+            std::cout << "======\n\n";
         }
     }
     return best;
