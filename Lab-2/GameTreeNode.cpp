@@ -11,6 +11,7 @@ GameTreeNode::~GameTreeNode() {
     for (auto* child : children) delete child;
 }
 
+//Crea las jugadas hijas en el arbol
 void GameTreeNode::generateChildren() {
     if (depth <= 0) return;
     int size = board.size();
@@ -24,6 +25,7 @@ void GameTreeNode::generateChildren() {
     for (auto* child : children) child->generateChildren();
 }
 
+//Evalua las formas deganar de IA - Las formas de ganar jugador
 void GameTreeNode::evaluateWinPaths() {
     int size = board.size();
     auto count = [&](char p) {
@@ -52,6 +54,7 @@ int GameTreeNode::utility() const {
     return aiWinPaths - playerWinPaths;
 }
 
+//Busca la mejor jugada segun minmax en todo el arbol generado con profundidad "depth"
 GameTreeNode* GameTreeNode::bestMove(bool maximizing) {
     if (children.empty()) return this;
     int bestVal = maximizing ? -9999 : 9999;
