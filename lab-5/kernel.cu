@@ -2,7 +2,7 @@
 #include <cuda_runtime.h>
 
 #define NUM_NEURONAS 10 
-#define NUM_ENTRADAS 25      
+#define NUM_ENTRADAS 32 //4x8      
 #define NUM_PATRONES 10 //10 numeros a analizar (0-9)     
 #define UMBRAL     0.5f      
 #define TASA_APRENDIZAJE 1.0f
@@ -16,65 +16,115 @@
 
 float entradasCPU[NUM_PATRONES][NUM_ENTRADAS] = {
     // 0
-    {1,1,1,1,1,
-    1,0,0,0,1,
-    1,0,0,0,1,
-    1,0,0,0,1,
-    1,1,1,1,1},
-     // 1
-    {0,0,1,0,0,
-    0,0,1,0,0,
-    0,0,1,0,0,
-    0,0,1,0,0,
-    0,0,1,0,0},
+    {
+        1,1,1,1,
+        1,0,0,1,
+        1,0,0,1,
+        1,0,0,1,
+        1,0,0,1,
+        1,0,0,1,
+        1,0,0,1,
+        1,1,1,1
+    },
+    // 1
+    {
+        0,1,1,0,
+        0,1,1,0,
+        0,1,1,0,
+        0,1,1,0,
+        0,1,1,0,
+        0,1,1,0,
+        0,1,1,0,
+        0,1,1,0
+    },
     // 2
-    {1,1,1,1,1,
-    0,0,0,0,1,
-    1,1,1,1,1,
-    1,0,0,0,0,
-    1,1,1,1,1},
+    {
+        1,1,1,1,
+        0,0,0,1,
+        0,0,0,1,
+        1,1,1,1,
+        1,0,0,0,
+        1,0,0,0,
+        1,0,0,0,
+        1,1,1,1
+    },
     // 3
-    {1,1,1,1,1,
-    0,0,0,0,1,
-    0,1,1,1,1,
-    0,0,0,0,1,
-    1,1,1,1,1},
+    {
+        1,1,1,1,
+        0,0,0,1,
+        0,0,0,1,
+        1,1,1,1,
+        0,0,0,1,
+        0,0,0,1,
+        0,0,0,1,
+        1,1,1,1
+    },
     // 4
-    {1,0,0,0,1,
-    1,0,0,0,1,
-    1,1,1,1,1,
-    0,0,0,0,1,
-    0,0,0,0,1},
+    {
+        1,0,0,1,
+        1,0,0,1,
+        1,0,0,1,
+        1,1,1,1,
+        0,0,0,1,
+        0,0,0,1,
+        0,0,0,1,
+        0,0,0,1
+    },
     // 5
-    {1,1,1,1,1,
-    1,0,0,0,0,
-    1,1,1,1,1,
-    0,0,0,0,1,
-    1,1,1,1,1},
+    {
+        1,1,1,1,
+        1,0,0,0,
+        1,0,0,0,
+        1,1,1,1,
+        0,0,0,1,
+        0,0,0,1,
+        0,0,0,1,
+        1,1,1,1
+    },
     // 6
-    {1,1,1,1,1,
-    1,0,0,0,0,
-    1,1,1,1,1,
-    1,0,0,0,1,
-    1,1,1,1,1},
+    {
+        1,1,1,1,
+        1,0,0,0,
+        1,0,0,0,
+        1,1,1,1,
+        1,0,0,1,
+        1,0,0,1,
+        1,0,0,1,
+        1,1,1,1
+    },
     // 7
-    {1,1,1,1,1,
-    0,0,0,0,1,
-    0,0,0,0,1,
-    0,0,0,0,1,
-    0,0,0,0,1},
+    {
+        1,1,1,1,
+        0,0,0,1,
+        0,0,0,1,
+        0,0,0,1,
+        0,0,0,1,
+        0,0,0,1,
+        0,0,0,1,
+        0,0,0,1
+    },
     // 8
-    {1,1,1,1,1,
-    1,0,0,0,1,
-    1,1,1,1,1,
-    1,0,0,0,1,
-    1,1,1,1,1},
+    {
+        1,1,1,1,
+        1,0,0,1,
+        1,0,0,1,
+        1,1,1,1,
+        1,0,0,1,
+        1,0,0,1,
+        1,0,0,1,
+        1,1,1,1
+    },
     // 9
-    {1,1,1,1,1,
-    1,0,0,0,1,
-    1,1,1,1,1,
-    0,0,0,0,1,
-    1,1,1,1,1}
+    {
+        1,1,1,1,
+        1,0,0,1,
+        1,0,0,1,
+        1,1,1,1,
+        0,0,0,1,
+        0,0,0,1,
+        0,0,0,1,
+        1,1,1,1
+    }
 };
 
 float deseadoCPU[NUM_PATRONES][NUM_NEURONAS] = {
@@ -95,18 +145,18 @@ float* entradasGPU = nullptr;
 float* deseadoGPU = nullptr; 
 float* pesosGPU = nullptr; 
 float* pesosBiasGPU = nullptr; 
-int* errorGPU = nullptr; // un indicador 0 = sin error, 1 = actualizar pesos
+int* errorGPU = nullptr; // 0 = entrenamiento correcto , 1 = necesita otra epoca
 
-// Calcula la salida de las 10 neuronas para un patrón dado y actualiza los pesos
+// Calcula la salida de las 10 neuronas para un patron y actualiza los pesos
 __global__ void entrenamientoGPU(int patronIdx, float* pesosGPU, float* pesosBiasGPU,
     float* entradasGPU, float* deseadoGPU, int* errorGPU) {
     int i = threadIdx.x;  
 
     // suma de pesos*entredas
     float suma = pesosBiasGPU[i] * BIAS_ENTRADA;
-    int offset = patronIdx * NUM_ENTRADAS;  // indice del inicio del patron en el array de entradas
+    int vectorDelPatron = patronIdx * NUM_ENTRADAS;  // indice del inicio del patron en el array de entradas
     for (int j = 0; j < NUM_ENTRADAS; ++j) {
-        suma += pesosGPU[i * NUM_ENTRADAS + j] * entradasGPU[offset + j];
+        suma += pesosGPU[i * NUM_ENTRADAS + j] * entradasGPU[vectorDelPatron + j];
     }
     float salida = (suma >= UMBRAL) ? 1.0f : 0.0f; //redondeo de la salida
 
@@ -117,21 +167,21 @@ __global__ void entrenamientoGPU(int patronIdx, float* pesosGPU, float* pesosBia
         // actulizar los pesos de la neurona i
         for (int j = 0; j < NUM_ENTRADAS; ++j) {
             // peso_nuevo = peso_viejo + tasa * error * entrada
-            pesosGPU[i * NUM_ENTRADAS + j] += TASA_APRENDIZAJE * error * entradasGPU[offset + j];
+            pesosGPU[i * NUM_ENTRADAS + j] += TASA_APRENDIZAJE * error * entradasGPU[vectorDelPatron + j];
         }
         // Actualizar el peso del bias de la neurona i
         pesosBiasGPU[i] += TASA_APRENDIZAJE * error * BIAS_ENTRADA;
     }
 }
 
-// calcula la salida de las 10 neuronas con los pesos actualizados
+// calcula la salida de las 10 neuronas con los pesos entrenados
 __global__ void calcularSumaGPU(int patronIdx, float* pesosGPU, float* pesosBiasGPU,
     float* entradasGPU, float* salidasGPU) {
     int i = threadIdx.x;  
     float suma = pesosBiasGPU[i] * BIAS_ENTRADA;
-    int offset = patronIdx * NUM_ENTRADAS;
+    int vectorDelPatron = patronIdx * NUM_ENTRADAS;
     for (int j = 0; j < NUM_ENTRADAS; ++j) {
-        suma += pesosGPU[i * NUM_ENTRADAS + j] * entradasGPU[offset + j];
+        suma += pesosGPU[i * NUM_ENTRADAS + j] * entradasGPU[vectorDelPatron + j];
     }
     salidasGPU[patronIdx * NUM_NEURONAS + i] = (suma > UMBRAL) ? 1.0f : 0.0f;
 }
@@ -156,22 +206,21 @@ int main() {
     // ======================================================================================================
     // ENTRENAMIENTO
     int epocas = 0;
-    bool bucle = false;
-    while (!bucle) {
+    bool bucle = true;
+    while (bucle) {
         epocas++;
-        bucle = true;  // hasta encontrar un error
+        bucle = false;  // hasta encontrar un error
         for (int p = 0; p < NUM_PATRONES; ++p) {
             int cero = 0;
             cudaMemcpy(errorGPU, &cero, sizeof(int), cudaMemcpyHostToDevice);
-            // usar el kernel para los hilos en las 10 neuronas
+            // usar el GPU para cada vector de neurona que tiene pesos independientes a otra neurona
             entrenamientoGPU << <1, NUM_NEURONAS >> > (p, pesosGPU, pesosBiasGPU, entradasGPU, deseadoGPU, errorGPU);
             cudaDeviceSynchronize();  // esperar que el kernel termine 
             
+            // parar el entrenamiento si no hay error
             int errorCPU;
             cudaMemcpy(&errorCPU, errorGPU, sizeof(int), cudaMemcpyDeviceToHost);
-            if (errorCPU == 1) {
-                bucle = false;  // hubo un error en la salida deseada
-            }
+            if (errorCPU == 1) bucle = true;  // hubo un error en la salida deseada
         }
         // Terminar si hay muchas epocas
         if (epocas > 10000) {
@@ -201,11 +250,14 @@ int main() {
     // TEST CON NUEVAS MATRICES
     const int testIndx = 1;
     float testEntradaCPU[testIndx][NUM_ENTRADAS] = {
-        {1,1,1,1,1,
-        0,0,0,0,1,
-        0,1,1,1,1,
-        0,0,0,0,1,
-        1,1,1,1,1} };
+        {0,1,1,0,
+        0,1,1,0,
+        0,1,1,0,
+        0,1,1,0,
+        0,1,1,0,
+        0,1,1,0,
+        0,1,1,0,
+        0,1,1,0} };
 
     float salidasCPU[testIndx * NUM_NEURONAS];
     float* salidasGPU = nullptr;
