@@ -17,7 +17,7 @@
 #define TAMANIO_MINI_LOTE 32
 #define TAMANIO_ENTRADA 784
 #define TAMANIO_SALIDA 10
-#define NUM_CAPAS_OCULTAS 20
+#define NUM_CAPAS_OCULTAS 120
 #define NEURONAS_POR_OCULTA 20
 
 using namespace std;
